@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+    <title>Exercise 3: Build a rotation gesture</title>
+    <link rel="stylesheet" type="text/css" href="./res/styles/normalize.css">
+    <link rel="stylesheet" type="text/css" href="./res/styles/prettify.css" />
+    <link rel="stylesheet" type="text/css" href="./res/styles/styles.css">
+</head>
+
+<body>
+    <!-- Use the same title as the StartHere -->
+    <header>AND241 Gestures</header>
+
+   
+<section id="main">
+
+  <h1 id="page-title"></h1>
+
+        <h2>Duration</h2>
+        <p>20 minutes</p>
+
+        <div class="hintblock">
+            <strong>Tip:</strong> If you are doing this exercise live in a session, make sure to make good use of the instructor, they are online to answer any questions you have!
+        </div>
+
+        <h2>Goals</h2>
+
+        <p>
+          The primary goal of this exercise is to create a rotation gesture recognizer and add it to an existing application.
+          <table width="100%" border="0">
+          <tbody>
+            <tr>
+              <td width="50%"><img src="res/images/ex1_complete.png" alt="" width="240"/></td>
+              <td width="50%"><img src="res/images/ex3_complete.png" alt="" width="240"/></td>
+            </tr>
+          </tbody>
+          </table>
+          </p>
+
+        <!-- Include a screen shot of the completed project? -->
+
+        <!-- Include any differences about the OS or environment expectations
+             if there are changes from StartHere for this lab -->
+
+        <!-- Note any starter/complete or assets included in this lab. -->
+        <!-- Remove this section if there are none -->
+        <h2>Required assets</h2>
+              <p>
+                  This exercise is a continuation of the previous exercise. You can use your existing solution or start with the completed solution in the <b>Exercise 2</b> folder.
+                  The <strong>Exercise 3</strong> folder contains a completed a solution which you can use to check your work.
+                  Please make sure you have these folders before you begin.
+              </p>
+
+              <!-- Can put additional hints in collapsable blocks for additional resources - these should be
+   things we covered in the materials already, but useful as reminders for how to complete a task. Make sure to replace the "unique_id_here", also you have to write out the starting text twice - make sure they are the same! -->
+
+        <!-- Steps -->
+       <h1>Steps</h1>
+        <p>
+            Below are the step-by-step instructions.<br>
+            Start by opening your completed solution from Exercise 2; alternatively, you can use the completed solution in the <b>Exercise 2</b> folder.
+        </p>
+
+        <h2>Create <code>IOnRotationGestureListener</code></h2>
+        <p>The Android APIs do not include a rotation gesture so we'll create one. The first step is to create the gesture interface.</p>
+        <ol>
+          <li>Add a new interface named <b>IOnRotationGestureListener</b>.</li>
+          <li>Open the new file and add a single void method definition <b>OnRotate</b> that takes a float parameter named <b>angle</b>.</li>
+          <li>Change the namespace to <b>RotationGesture</b>.</li>
+        </ol>
+        <p><a href="#" onclick="toggleCode(this,'IOnRotationGestureListener');return false;" class="uiitem">Show Code</a>
+<div class="indent-medium" id="IOnRotationGestureListener" style="display:none;">
+ <pre class="prettyprint">
+using System;
+
+namespace RotationGesture
+{
+   public interface IOnRotationGestureListener
+   {
+      void OnRotate (float angle);
+   }
+}
+</pre></div>
+
+        <h2>Create a Rotation Gesture Detector class</h2>
+        <p>We'll create a rotation gesture detector class, following the patterns set by the Android APIs.</p>
+        <ol>
+          <li>Create a new class named <b>RotationGestureDetector</b>.</li>
+          <li>Change the namespace to <b>RotationGesture</b>.</li>
+          <li>Add a <code>IOnRotationGestureListener</code> field named <b>rotationListener</b>.</li>
+          <li>Add a constructor that takes an <code>IOnRotationGestureListener</code> parameter named <b>listener</b>.</li>
+          <li>Set <b>rotationListener</b> using the passed in <b>listener</b> parameter.</li>
+          <li>Add a public <code>boolean</code> method named <b>OnTouchEvent</b> that accepts a <code>MotionEvent</code> parameter named <b>e</b>.</li>
+          <li>Add two fields of type float named <b>angle</b> and <b>angleOffset</b>.</li>
+        </ol>
+        <p><a href="#" onclick="toggleCode(this,'RotationGesture');return false;" class="uiitem">Show Code</a>
+        <div class="indent-medium" id="RotationGesture" style="display:none;">
+        <pre class="prettyprint">
+using System;
+
+namespace RotationGesture
+{
+   public class RotationGestureDetector
+   {
+      IOnRotationGestureListener rotationListener;
+
+      float angleOffset;
+      float angle;
+
+      public RotationGestureDetector (IOnRotationGestureListener listener)
+      {
+         rotationListener = listener;
+      }
+
+      public bool OnTouchEvent (MotionEvent e)
+      {
+         return true;
+      }
+   }
+}        </pre></div>
+
+        <h2>Add the angle calculation code</h2>
+        <p>To implement a rotation gesture detector, we'll need code to calculate the angle relative to the screen between two touch locations.
+        This code has been provided for you below; you may examine it to see how it works.
+        </p>
+        <p>copy the two methods below into your <b>RotationGestureDetector</b> class.</p>
+        <ol>
+        <pre class="prettyprint codeblock">
+float GetAngle (MotionEvent e)
+{
+   return GetAngle (e.GetX(0), e.GetY(0), e.GetX(1), e.GetY(1));
+}
+
+float GetAngle (float x1, float y1, float x2, float y2)
+{
+   double angle = Math.Atan2((y1 - y2), (x1 - x2));
+   return (float)(angle * 180 / Math.PI);
+}
+</pre>
+     </ol>
+     
+     <h2>Respond to Touch Events</h2>
+        <p>Just like we did in AND240, we'll create a switch statement in the <code>OnTouchEvent</code> method based on the <code>MotionAction</code>'s <code>ActionMasked</code>.</p>
+        <ol>
+          <li>In <code>OnTouchEvent</code>, create a switch statement based on <code>e.ActionMasked</code>.</li>
+          <li>Add case statements for <code>MotionEventActions.PointerDown</code> and
+          <code>MotionEventActions.Move</code>.</li>
+        </ol>
+        <p><a href="#" onclick="toggleCode(this,'OnTouchEvent');return false;" class="uiitem">Show Code</a>
+        <div class="indent-medium" id="OnTouchEvent" style="display:none;">
+        <pre class="prettyprint">
+public bool OnTouchEvent (MotionEvent e)
+{
+   switch (e.ActionMasked)
+   {
+   case MotionEventActions.PointerDown:
+      break;
+   case MotionEventActions.Move:
+      break;
+   }
+   return true;
+}
+        </pre></div>
+
+        <h2>Respond to PointerDown Actions</h2>
+        <p>We'll need to calculate the relative angle when two fingers touch the screen.</p>
+        <p>Remember, <code>MotionEventActions.Down</code> is triggered when the first finger touches the screen,
+          <code>MotionEventActions.PointerDown</code> is triggered for any additional fingers. We'll perform the calculation when two fingers are on screeen.</p>
+        <ol>
+          <li>In the case statement for <code>PointerDown</code>, when the pointer count is exactly 2, use the <code>GetAngle</code> method to find the initial angle of the fingers, from that subtract <b>angle</b> and save it to <b>angleOffset</b>.
+        </ol>
+        <p><a href="#" onclick="toggleCode(this,'DownActions');return false;" class="uiitem">Show Code</a>
+        <div class="indent-medium" id="DownActions" style="display:none;">
+        <pre class="prettyprint">
+switch (e.ActionMasked)
+{
+   case MotionEventActions.PointerDown:
+     if(e.PointerCount == 2)
+        angleOffset = GetAngle (e) - angle;
+     break;
+   ...
+}</pre></div>
+        <h2>Respond to Move Actions</h2>
+        <p>The next steps are to be completed in the <code>MotionActionEvents.Move</code> case.</p>
+        <ol>
+          <li>Check <code>e.PointerCount</code> to ensure we have at least two fingers touching the screen.</li>
+          <li>If so, calculate the angle using the <code>GetAngle</code> method.<br>
+          To find the true angle, subtract <b>angleOffet</b> and save the result in <b>angle</b>.</li>
+          <li>Notify the rotation listener; ensure <b>rotationListener</b> isn't <code>null</code>, then invoke <code>OnRotate</code>, passing in <b>angle</b>.</li>
+        </ol>
+        <p><a href="#" onclick="toggleCode(this,'MoveActions');return false;" class="uiitem">Show Code</a>
+        <div class="indent-medium" id="MoveActions" style="display:none;">
+        <pre class="prettyprint">
+case MotionEventActions.Move:
+   if(e.PointerCount >= 2)
+   {
+      angle = GetAngle(e) - angleOffset;
+      rotationListener?.OnRotate(angle);
+   }
+   break;</pre></div>
+
+      <h2>Add a Rotation Gesture Detector to MainActivity</h2>
+        <p>The <code>RotationGestureDetector</code> class is now complete.
+          The final steps are to use the listener and create an instance of the detector in MainActivity.</p>
+        <ol>
+          <li>Add a <code>RotationGesture</code> field named <b>rotationGesture</b>.</li>
+          <li>Instantiate <b>rotationGesture</b> in the <code>OnCreate</code> method, passing <code>this</code> in for the <b>listener</b> parameter.</li>
+          <li>Pass the <code>MotionEvent</code> <b>e</b> to <b>rotationGesture</b> in the <code>OnTouchEvent</code> method.</li>
+          <li>Implement <code>IOnRotationGestureListener</code> on MainActivity.</li>
+          <li>Create the required <code>OnRotation</code> method.</li>
+          <li>In <code>OnRotation</code>, set <b>xamLogo</b>'s <code>Rotation</code> property to the passed in <b>angle</b> parameter.</li>
+          <li>Run the app!</li>
+        </ol>
+        <p><a href="#" onclick="toggleCode(this,'rotationDetector');return false;" class="uiitem">Show Code</a>
+        <div class="indent-medium" id="rotationDetector" style="display:none;">
+        <pre class="prettyprint">
+public class MainActivity : Activity, GestureDetector.IOnGestureListener, ScaleGestureDetector.IOnScaleGestureListener, <span class="highlight">IOnRotationGestureListener</span>
+{
+   <span class="highlight">private RotationGestureDetector rotationDetector;</span>
+   ...
+
+   protected override void OnCreate (Bundle bundle)
+   {
+      ...
+      <span class="highlight">rotationDetector = new RotationGestureDetector (this);</span>
+   }
+
+   public override bool OnTouchEvent (MotionEvent e)
+   {
+      ...
+      <span class="highlight">rotationDetector.OnTouchEvent (e);</span>
+
+      return true;
+   }
+
+<span class="highlight">
+   public void OnRotate (float angle)
+   {
+      xamLogo.Rotation = angle;
+   }</span>
+   ...
+}</pre></div>
+
+        <h1>Summary</h1>
+          <p>
+            In this exercise you completed your multi-gesture app by adding a custom rotation gesture to your existing scrolling and scaling application.
+            To achieve this, you had to build the rotation gesture from scratch by creating and implementing the <code>IOnRotationGestureListener</code> interface and the <code>RotationGestureDetector</code> class.</p>
+                <div class="align-right"><a href="../Start%20Here.html">Go Back</a>
+                  </div>
+               </ul>
+  <p><br>
+  </p>
+</section>
+
+    <script src="./res/js/jquery.min.js"></script>
+    <script src="./res/js/prettify.js"></script>
+    <script src="./res/js/script.js"></script>
+
+    <footer>Copyright (C) 2018 Xamarin Inc., Microsoft.</footer>
+</body>
+</html>
